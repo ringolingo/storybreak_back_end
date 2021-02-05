@@ -33,8 +33,10 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(' ')
 # Application definition
 
 INSTALLED_APPS = [
+    'storyapp',
     'corsheaders',
     'rest_framework',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
