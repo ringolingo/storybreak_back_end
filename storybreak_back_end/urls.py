@@ -24,5 +24,5 @@ router.register(r'scenes', views.SceneView, 'scene')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
 ]
