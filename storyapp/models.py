@@ -14,7 +14,7 @@ class Scene(models.Model):
     entity_key = models.CharField(max_length=8)
     content_blocks = models.TextField(blank=True)
     card_summary = models.TextField(blank=True)
-    location = models.PositiveSmallIntegerField
+    location = models.IntegerField(null=True)
     story = models.ForeignKey('Story', on_delete=models.CASCADE)
 
     def __str__(self):

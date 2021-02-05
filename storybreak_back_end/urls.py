@@ -20,6 +20,7 @@ from storyapp import views
 
 router = routers.DefaultRouter()
 router.register(r'stories', views.StoryView, 'story')
+router.register(r'scenes', views.SceneView, 'scene')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
