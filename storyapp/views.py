@@ -12,13 +12,10 @@ class StoryView(viewsets.ModelViewSet):
 
 class SceneView(viewsets.ModelViewSet):
     serializer_class = SceneSerializer
-    queryset = Scene.objects.all()
+    # queryset = Scene.objects.all()
 
-    # def get_object(self):
-    #     queryset = Scene.objects.all()
-    #     id = self.request.query_params.get('id')
-    #     scene = queryset.get(id=id)
-    #     return scene
-
-    # def get_object(self):
-    #       ??????
+    def get_queryset(self):
+        queryset = Scene.objects.all()
+        story = self.request.query_params.get('story')
+        queryset = queryset.filter(story=story)
+        return queryset
