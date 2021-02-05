@@ -15,6 +15,7 @@ class Scene(models.Model):
     content_blocks = models.TextField(blank=True)
     card_summary = models.TextField(blank=True)
     location = models.PositiveSmallIntegerField
+    story = models.ForeignKey('Story', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.entity_key
