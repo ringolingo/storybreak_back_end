@@ -15,7 +15,7 @@ class Scene(models.Model):
     content_blocks = models.TextField(blank=True)
     card_summary = models.TextField(blank=True)
     location = models.IntegerField(null=True)
-    story = models.ForeignKey('Story', on_delete=models.CASCADE)
+    story = models.ForeignKey('Story', on_delete=models.CASCADE, related_name='scenes')
 
     def __str__(self):
         return self.entity_key
