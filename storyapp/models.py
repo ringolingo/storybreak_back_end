@@ -19,3 +19,6 @@ class Scene(models.Model):
 
     def __str__(self):
         return self.entity_key
+
+    class Meta:
+        ordering = ('location', )
