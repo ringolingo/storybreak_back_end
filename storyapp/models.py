@@ -16,7 +16,7 @@ class Story(models.Model):
     # TODO checking on how well (if at all) this works is going to require having
     # scenes that are actually tied to the text
     # update IT SEEMS LIKE THIS WORKS? TENTATIVELY? WHEN THERE ARE ACTUAL SCENE OBJECTS IN THE TEXT?
-    def chunk_text(self):
+    def split_text(self):
         # reset all scene locations so they can be updated based on text
         # and any removed from text will then be removed from location-based lineup
         scenes = self.scene_set()
