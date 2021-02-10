@@ -47,7 +47,7 @@ class SceneView(viewsets.ViewSet):
     def list(self, request):
         if request.query_params:
             story = self.request.query_params.get('story')
-            queryset = Scene.objects.filter(story=story)
+            queryset = Scene.objects.filter(location__isnull=False, story=story)
             serializer = SceneSerializer(queryset, many=True)
             return Response(serializer.data)
         else:
