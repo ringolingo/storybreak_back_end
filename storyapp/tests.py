@@ -24,6 +24,20 @@ class StoryTestCase(TestCase):
             location=4,
             story=story
         )
+        Scene.objects.create(
+            entity_key="b1d6j7aa",
+            content_blocks='{"key":"1mr2t","text":"I have a None location and do not belong in the scene_set*","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}}',
+            card_summary="a villain appears",
+            location=None,
+            story=story
+        )
+        Scene.objects.create(
+            entity_key="als930sk",
+            content_blocks='{"key":"1mr2t","text":"I start with a location but it should be set to None by the end of this*","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}}',
+            card_summary="more villains",
+            location=1,
+            story=story
+        )
 
 
         story_two = Story.objects.create(
@@ -61,10 +75,14 @@ class StoryTestCase(TestCase):
         story_scenes = story.scene_set()
         scene_one = Scene.objects.get(entity_key="dr2hgl5j")
         scene_two = Scene.objects.get(entity_key="milhz12y")
+        scene_three = Scene.objects.get(entity_key="b1d6j7aa")
+        scene_four = Scene.objects.get(entity_key="als930sk")
 
-        self.assertEqual(len(story_scenes), 2)
+        self.assertEqual(len(story_scenes), 3)
         self.assertIn(scene_one, story_scenes)
         self.assertIn(scene_two, story_scenes)
+        self.assertNotIn(scene_three, story_scenes)
+        self.assertIn(scene_four, story_scenes)
 
     def test_split_text(self):
         """split_text saves each scene's story content to that scene's object"""
@@ -73,6 +91,7 @@ class StoryTestCase(TestCase):
 
         scene_one = Scene.objects.get(entity_key="dr2hgl5j")
         scene_two = Scene.objects.get(entity_key="milhz12y")
+        scene_four = Scene.objects.get(entity_key="als930sk")
 
         expected_scene_one = '[{"key":"92eck","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]'
         expected_scene_two = '[{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloop","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]'
@@ -81,8 +100,7 @@ class StoryTestCase(TestCase):
         self.assertEqual(scene_two.content_blocks, expected_scene_two)
         self.assertEqual(scene_one.location, 0)
         self.assertEqual(scene_two.location, 1)
-
-    #   TODO need to add a scene in set up and tests here to check that a scene with a location, that isn't in saved story, has location set to None
+        self.assertEqual(scene_four.location, None)
 
     def test_assemble_text(self):
         story = Story.objects.get(title="Vindication")

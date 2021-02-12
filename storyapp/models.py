@@ -11,7 +11,8 @@ class Story(models.Model):
         return self.title
 
     def scene_set(self):
-        return Scene.objects.filter(story=self)
+        # returns scenes that belong to this story and are active (have a location)
+        return Scene.objects.filter(location__isnull=False, story=self)
 
     def split_text(self):
         # reset all scene locations so they can be updated based on text
@@ -19,6 +20,7 @@ class Story(models.Model):
         scenes = self.scene_set()
         for scene in scenes:
             scene.location = None
+            scene.save()
 
         # parse full content into scenes by finding blocks that are entities
         # and grouping subsequent blocks with them until finding next entity
@@ -37,7 +39,6 @@ class Story(models.Model):
                 scene = Scene.objects.get(entity_key=break_id)
                 scene.content_blocks = json.dumps(holder, separators=(',', ':'))
                 scene.location = index
-                # save the related line in entityMap into the scene? as a new scene property maybe?
                 scene.save()
                 holder = []
 
@@ -50,7 +51,6 @@ class Story(models.Model):
             scene = Scene.objects.get(entity_key=break_id)
             scene.content_blocks = json.dumps(holder, separators=(',', ':'))
             scene.location = index
-            # save the related line in entityMap into the scene? as a new scene property maybe?
             scene.save()
 
     def assemble_text(self):
@@ -67,7 +67,7 @@ class Story(models.Model):
 
         # 1. assemble blocks
         # gather all the scenes/filter out ones that don't have location/order by location
-        active_scenes = Scene.objects.filter(location__isnull=False, story=self)
+        active_scenes = self.scene_set()
         # each through scenes
         for scene in active_scenes:
             # json load the scene's content blocks
