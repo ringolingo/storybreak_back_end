@@ -199,7 +199,7 @@ class StorySerializerTestCase(TestCase):
 
         self.valid_new_story = {
             "title": "Cromulent",
-            "draft_raw": "don't @ me spell check that's a perfectly cromulent word"
+            "draft_raw": '{"blocks":[{"key":"92eck","text":"I should be returned on a valid update, just like so","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"atrpi","text":"***hphu2b6t***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"bn7q6","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"1amo3","text":"***ykqopa06***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"bo6jt","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":2}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":3}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloopss","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"hphu2b6t"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"ykqopa06"},"2":{"type":"SCENE","mutability":"IMMUTABLE","data":"dr2hgl5j"},"3":{"type":"SCENE","mutability":"IMMUTABLE","data":"milhz12y"}}}'
         }
 
         self.invalid_new_story = {
@@ -211,14 +211,21 @@ class StorySerializerTestCase(TestCase):
         response = client.get(reverse('story-list'))
         stories = Story.objects.all()
         serializer = StorySerializer(stories, many=True)
+
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_single_valid_story(self):
-        response = client.get(reverse('story-detail', kwargs={'pk': self.story.id}))
-        story = Story.objects.get(id=self.story.id)
+        # get can retrieve a story with the given pk
+        # get updates the story's draft_raw based on its cards before returning to user
+        response = client.get(reverse('story-detail', kwargs={'pk': self.story_two.id}))
+        story = Story.objects.get(id=self.story_two.id)
         serializer = StorySerializer(story)
+
+        expected_story_draft_raw = '{"blocks":[{"key":"2mr2t","text":"***ymcm8tfx***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"3ngqt","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"ffhk","text":"bang","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"13mb0","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"1ch14","text":"***x2m2c5kd***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"1a2m9","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"ed3om","text":"whimper","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"f64jc","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"ymcm8tfx"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"x2m2c5kd"}}}'
+
         self.assertEqual(response.data, serializer.data)
+        self.assertEqual(expected_story_draft_raw, response.data["draft_raw"])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_single_invalid_story(self):
@@ -226,18 +233,30 @@ class StorySerializerTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_valid_story(self):
+        # create can create a story and save it in database
+        # saves it with the draft_raw as it just received from the story
+        # draft_raw has not been affected by the scene objects
         response = client.post(reverse('story-list'), data=self.valid_new_story)
+        expected_draft_raw = '{"blocks":[{"key":"92eck","text":"I should be returned on a valid update, just like so","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"atrpi","text":"***hphu2b6t***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"bn7q6","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"1amo3","text":"***ykqopa06***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"bo6jt","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":2}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":3}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloopss","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"hphu2b6t"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"ykqopa06"},"2":{"type":"SCENE","mutability":"IMMUTABLE","data":"dr2hgl5j"},"3":{"type":"SCENE","mutability":"IMMUTABLE","data":"milhz12y"}}}'
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['draft_raw'], expected_draft_raw)
 
     def test_create_invalid_story(self):
         response = client.post(reverse('story-list'), data=self.invalid_new_story)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_valid_update_story(self):
-        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), data=json.dumps(self.valid_new_story))
+        # update can update story with the given pk
+        # after update, the database has the story draft_raw as it was just sent
+        # -- has not changed it based on scene objects
+        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), self.valid_new_story)
+        expected_draft_raw = '{"blocks":[{"key":"92eck","text":"I should be returned on a valid update, just like so","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"atrpi","text":"***hphu2b6t***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"bn7q6","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"1amo3","text":"***ykqopa06***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"bo6jt","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":2}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":3}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloopss","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"hphu2b6t"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"ykqopa06"},"2":{"type":"SCENE","mutability":"IMMUTABLE","data":"dr2hgl5j"},"3":{"type":"SCENE","mutability":"IMMUTABLE","data":"milhz12y"}}}'
+
+        self.assertEqual(response.data, expected_draft_raw)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # TODO apparently program allows story to be updated without title
+    # TODO this may be a false positive as valid_update is also failing
     def test_invalid_update_story(self):
         response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), data=json.dumps(self.invalid_new_story))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

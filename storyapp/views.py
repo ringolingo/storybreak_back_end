@@ -10,35 +10,42 @@ class StoryView(viewsets.ViewSet):
     def list(self, request):
         queryset = Story.objects.all()
         serializer = StorySerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         queryset = Story.objects.all()
         story = get_object_or_404(queryset, pk=pk)
         serializer = StorySerializer(story)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
         serializer = StorySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message":"success", "data":serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
-        try:
-            story = Story.objects.get(id=pk)
-            serializer = StorySerializer(story, data=request.data)
-            serializer.is_valid(raise_exception=True)
+        story = Story.objects.get(id=pk)
+        serializer = StorySerializer(story, data=request.data)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
-        except:
-            return Response({"message":"invalid story or request"})
-        return Response({"message":"successful", "data":serializer.data})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message":serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # try:
+        #     story = Story.objects.get(id=pk)
+        #     serializer = StorySerializer(story, data=request.data)
+        #     serializer.is_valid(raise_exception=True)
+        #     serializer.save()
+        # except:
+        #     return Response({"message":"invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
         queryset = Story.objects.all()
         story = get_object_or_404(queryset, pk=pk)
         story.delete()
-        return Response({"message": "successful", "data":request.data}, status=status.HTTP_204_NO_CONTENT)
+        return Response(request.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class SceneView(viewsets.ViewSet):
@@ -72,7 +79,7 @@ class SceneView(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
         except:
-            return Response({"message":"invalid scene or request"})
+            return Response({"message":"invalid scene or request"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message":"successful", "data":serializer.data})
 
     def destroy(self, request, pk=None):
