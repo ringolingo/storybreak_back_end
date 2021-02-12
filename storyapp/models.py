@@ -1,7 +1,6 @@
 from django.db import models
 import json
 
-# Create your models here.
 class Story(models.Model):
     title = models.CharField(max_length=200)
     draft_raw = models.TextField()
@@ -11,6 +10,7 @@ class Story(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        # when story is saved, it updates its scenes accordingly
         self.split_text()
         super().save(*args, **kwargs)
 
@@ -19,12 +19,11 @@ class Story(models.Model):
         return Scene.objects.filter(location__isnull=False, story=self)
 
     def split_text(self):
-        # does not run when story is first being created
+        # does not run when story is first being created (has no text)
         if not self.id:
             return
 
-        # reset all scene locations so they can be updated based on text
-        # and any removed from text will then be removed from location-based lineup
+        # reset all scene locations so only the ones in most recent text update will be part of scene_set
         scenes = self.scene_set()
         for scene in scenes:
             scene.location = None
@@ -43,6 +42,7 @@ class Story(models.Model):
                 index = block['entityRanges'][0]['key']
                 break_id = raw['entityMap'][str(index)]['data']
                 holder.append(block)
+            # if the current block is a new scene break, and we need to save the last scene's content before moving on
             elif len(block['entityRanges']) > 0:
                 try:
                     scene = Scene.objects.get(entity_key=break_id)
@@ -56,6 +56,7 @@ class Story(models.Model):
                 index = block['entityRanges'][0]['key']
                 break_id = raw['entityMap'][str(index)]['data']
                 holder.append(block)
+            # if the current block is just an ordinary non-scene-break line
             else:
                 holder.append(block)
         else:
@@ -67,49 +68,34 @@ class Story(models.Model):
             except:
                 pass
 
+    # when the story is retrieved, its draft_raw is updated to be in line with the last saved scenes
     def assemble_text(self):
-        # steps for assembling story text from scene content blocks:
-        # 0. clearout whatever story.draft_raw currently has
-        #   start by json loading draft_raw and setting raw['blocks'] = [] and raw['entityMap'] = {}
+        # clearout whatever story.draft_raw currently has
         raw_json = json.loads(self.draft_raw)
         raw_json['blocks'] = []
         raw_json['entityMap'] = {}
-            # I added this bit to check that blocks & entitymap clearing - they do
-            # new_string = json.dumps(raw_json)
-            # self.draft_raw = new_string
-            # self.save()
 
-        # 1. assemble blocks
-        # gather all the scenes/filter out ones that don't have location/order by location
+        # gather all the scenes that are active (have location values)
         active_scenes = self.scene_set()
-        # each through scenes
         for scene in active_scenes:
-            # json load the scene's content blocks
+            # load the scene's content blocks and add to story's draft_raw
             content = json.loads(scene.content_blocks)
-            # shove the contents of scene.content_blocks into blocks
-            # make sure not nesting arrays in arrays
             raw_json['blocks'] += content
 
-            # 2. assemble entity map
-            # entityMap is really just the same one object with the 'immutable, scene' blah blah
-            # and the differences are the keys and the data
-            # so like each through scene_set - for each scene, add to the entitymap object
-            # a key of scene.location and a value of that one same object as always with data set to scene.entity_key
+            # assemble entity map, adding a new dict for each scene and giving it the appropriate data value
             # entity_map_value: {'type': 'SCENE', 'mutability': 'IMMUTABLE', 'data': __________ }
             raw_json['entityMap'][str(scene.location)] = {'type': 'SCENE', 'mutability': 'IMMUTABLE', 'data': scene.entity_key}
 
-        # having added each scene's content blocks into the draft_raw's 'blocks' array and each scene's break's entity hash to draft_raw's entityMap
-        # need to turn perfectly nice data objects back into a messy string
+        # take now-current draft_raw and turn it back into a messy string
         updated_content = json.dumps(raw_json, separators=(',',':'))
         self.draft_raw = updated_content
         self.save()
-        # set draft_raw to messy string
-        # save story
-
+        # return draft_raw value for use in StoryRetrieveSerializer
+        return updated_content
 
 
 class Scene(models.Model):
-    entity_key = models.CharField(max_length=8)
+    entity_key = models.CharField(max_length=8, blank=True)
     content_blocks = models.TextField(blank=True)
     card_summary = models.TextField(blank=True)
     location = models.IntegerField(null=True)

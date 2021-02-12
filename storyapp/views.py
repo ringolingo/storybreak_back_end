@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from .serializers import StorySerializer, SceneSerializer
+from .serializers import StorySerializer, SceneSerializer, StoryRetrieveSerializer
 from .models import Story, Scene
 
 
@@ -15,7 +15,7 @@ class StoryView(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         queryset = Story.objects.all()
         story = get_object_or_404(queryset, pk=pk)
-        serializer = StorySerializer(story)
+        serializer = StoryRetrieveSerializer(story)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
