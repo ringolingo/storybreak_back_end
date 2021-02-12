@@ -19,6 +19,7 @@ class Story(models.Model):
         return Scene.objects.filter(location__isnull=False, story=self)
 
     def split_text(self):
+        # does not run when story is first being created
         if not self.id:
             return
 

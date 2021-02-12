@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from .serializers import StorySerializer, SceneSerializer
@@ -22,7 +22,7 @@ class StoryView(viewsets.ViewSet):
         serializer = StorySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message":"success", "data":serializer.data})
+        return Response({"message":"success", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         try:
@@ -37,10 +37,8 @@ class StoryView(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         queryset = Story.objects.all()
         story = get_object_or_404(queryset, pk=pk)
-        serializer = StorySerializer(story, data=request.data)
-        serializer.is_valid(raise_exception=True)
         story.delete()
-        return Response({"message": "successful", "data":serializer.data})
+        return Response({"message": "successful", "data":request.data}, status=status.HTTP_204_NO_CONTENT)
 
 
 class SceneView(viewsets.ViewSet):
@@ -65,7 +63,7 @@ class SceneView(viewsets.ViewSet):
         serializer = SceneSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message":"success", "data":serializer.data})
+        return Response({"message":"success", "data":serializer.data}, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         try:
@@ -80,7 +78,5 @@ class SceneView(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         queryset = Scene.objects.all()
         scene = get_object_or_404(queryset, pk=pk)
-        serializer = SceneSerializer(scene, data=request.data)
-        serializer.is_valid(raise_exception=True)
         scene.delete()
-        return Response({"message":"successful", "data":serializer.data})
+        return Response({"message":"successful", "data":request.data}, status=status.HTTP_204_NO_CONTENT)
