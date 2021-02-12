@@ -10,11 +10,18 @@ class Story(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        self.split_text()
+        super().save(*args, **kwargs)
+
     def scene_set(self):
         # returns scenes that belong to this story and are active (have a location)
         return Scene.objects.filter(location__isnull=False, story=self)
 
     def split_text(self):
+        if not self.id:
+            return
+
         # reset all scene locations so they can be updated based on text
         # and any removed from text will then be removed from location-based lineup
         scenes = self.scene_set()
@@ -36,22 +43,28 @@ class Story(models.Model):
                 break_id = raw['entityMap'][str(index)]['data']
                 holder.append(block)
             elif len(block['entityRanges']) > 0:
-                scene = Scene.objects.get(entity_key=break_id)
-                scene.content_blocks = json.dumps(holder, separators=(',', ':'))
-                scene.location = index
-                scene.save()
-                holder = []
+                try:
+                    scene = Scene.objects.get(entity_key=break_id)
+                    scene.content_blocks = json.dumps(holder, separators=(',', ':'))
+                    scene.location = index
+                    scene.save()
+                except:
+                    pass
 
+                holder = []
                 index = block['entityRanges'][0]['key']
                 break_id = raw['entityMap'][str(index)]['data']
                 holder.append(block)
             else:
                 holder.append(block)
         else:
-            scene = Scene.objects.get(entity_key=break_id)
-            scene.content_blocks = json.dumps(holder, separators=(',', ':'))
-            scene.location = index
-            scene.save()
+            try:
+                scene = Scene.objects.get(entity_key=break_id)
+                scene.content_blocks = json.dumps(holder, separators=(',', ':'))
+                scene.location = index
+                scene.save()
+            except:
+                pass
 
     def assemble_text(self):
         # steps for assembling story text from scene content blocks:
