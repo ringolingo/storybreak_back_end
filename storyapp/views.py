@@ -62,7 +62,7 @@ class SceneView(viewsets.ViewSet):
         serializer = SceneSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({"message":"success", "data":serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
         try:
@@ -72,10 +72,10 @@ class SceneView(viewsets.ViewSet):
             serializer.save()
         except:
             return Response({"message":"invalid scene or request"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"message":"successful", "data":serializer.data})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
         queryset = Scene.objects.all()
         scene = get_object_or_404(queryset, pk=pk)
         scene.delete()
-        return Response({"message":"successful", "data":request.data}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
