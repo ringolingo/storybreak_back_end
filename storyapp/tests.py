@@ -110,6 +110,7 @@ class StoryTestCase(TestCase):
         self.assertEqual(scene_four.location, None)
 
     def test_assemble_text(self):
+        """assemble_text creates a new draft_raw for the story based on that story's scenes' content_blocks"""
         story = Story.objects.get(title="Vindication")
         story.assemble_text()
 
@@ -208,6 +209,7 @@ class StorySerializerTestCase(TestCase):
         }
 
     def test_get_all_stories(self):
+        """get can retrieve all stories"""
         response = client.get(reverse('story-list'))
         stories = Story.objects.all()
         serializer = StorySerializer(stories, many=True)
@@ -216,8 +218,8 @@ class StorySerializerTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_single_valid_story(self):
-        # get can retrieve a story with the given pk
-        # get updates the story's draft_raw based on its cards before returning to user
+        """get can retrieve a story with the given pk
+        get updates the story's draft_raw based on its cards before returning to user"""
         response = client.get(reverse('story-detail', kwargs={'pk': self.story_two.id}))
         story = Story.objects.get(id=self.story_two.id)
         serializer = StorySerializer(story)
@@ -229,13 +231,14 @@ class StorySerializerTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_single_invalid_story(self):
+        """get returns 404 if no such story"""
         response = client.get(reverse('story-detail', kwargs={'pk': 38}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_create_valid_story(self):
-        # create can create a story and save it in database
-        # saves it with the draft_raw as it just received from the story
-        # draft_raw has not been affected by the scene objects
+        """create can create a story and save it in database
+        saves it with the draft_raw as it just received from the story
+        draft_raw has not been affected by the scene objects"""
         response = client.post(reverse('story-list'), data=self.valid_new_story)
         expected_draft_raw = '{"blocks":[{"key":"alskd","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"do6","text":"***y07hjbh4***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"e0c25","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bria5","text":"ah yes, it was spring","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"elbs7","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"du9qf","text":"and the smell of fresh tar was everywhere","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"81es1","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"8u06p","text":"\\"this was extremely funny, thanks,\\" the protagonist said.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"y07hjbh4"}}}'
 
@@ -243,29 +246,33 @@ class StorySerializerTestCase(TestCase):
         self.assertEqual(response.data['draft_raw'], expected_draft_raw)
 
     def test_create_invalid_story(self):
+        """create does not save a story with bad data"""
         response = client.post(reverse('story-list'), data=self.invalid_new_story)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    # TODO offer my first born child to a witch if she can figure out why the higgedy-heck this test will never ever pass no matter what!
     def test_valid_update_story(self):
-        # update can update story with the given pk
-        # after update, the database has the story draft_raw as it was just sent
-        # -- has not changed it based on scene objects
+        """update can update story with the given pk
+        after update, the database has the story draft_raw as it was just sent
+        -- has not changed it based on scene objects"""
         updated_story = {"title": "I'd loooove for this to work", "draft_raw": self.story.draft_raw}
-        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), updated_story)
+        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), data=json.dumps(updated_story), content_type='application/json')
 
-        self.assertEqual(response.data, self.story.draft_raw)
+        self.assertEqual(response.data['draft_raw'], updated_story['draft_raw'])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # TODO this may be a false positive as valid_update is also failing
     def test_invalid_update_story(self):
-        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), data=json.dumps(self.invalid_new_story))
+        """update does not save story if data is bad"""
+        response = client.put(reverse('story-detail', kwargs={'pk': self.story.id}), data=json.dumps(self.invalid_new_story), content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_valid_delete_story(self):
+        """delete correctly deletes story"""
         response = client.delete(reverse('story-detail', kwargs={'pk': self.story.id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_invalid_delete_story(self):
+        """delete returns 404 if story not found"""
         response = client.delete(reverse('story-detail', kwargs={'pk': 38}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
