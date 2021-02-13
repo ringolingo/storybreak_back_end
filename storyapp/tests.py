@@ -75,6 +75,25 @@ class StoryTestCase(TestCase):
         )
 
 
+        story_with_deleted_scene = Story.objects.create(
+            title="Alas",
+            draft_raw='{"blocks":[{"key":"4fdnc","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":0}],"data":{}},{"key":"3ov3t","text":"one","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9l94n","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":1}],"data":{}},{"key":"867gh","text":"two","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"fje60","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":2}],"data":{}},{"key":"224hb","text":"three","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"61ifpubi"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"ux72sqf2"},"2":{"type":"SCENE","mutability":"IMMUTABLE","data":"5i35elhw"}}}'
+        )
+        Scene.objects.create(
+            entity_key='ux72sqf2',
+            card_summary='2',
+            location=0,
+            story=story_with_deleted_scene,
+            content_blocks='[{"key":"9l94n","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":1}],"data":{}},{"key":"867gh","text":"two","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]'
+        )
+        Scene.objects.create(
+            entity_key='5i35elhw',
+            card_summary='3',
+            location=1,
+            story=story_with_deleted_scene,
+            content_blocks='[{"key":"fje60","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":2}],"data":{}},{"key":"224hb","text":"three","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]'
+        )
+
 
     def test_scene_set(self):
         """story can find all scenes belonging to it with scene_set"""
@@ -115,6 +134,14 @@ class StoryTestCase(TestCase):
         story.assemble_text()
 
         expected_story_draft_raw = '{"blocks":[{"key":"2mr2t","text":"***ymcm8tfx***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"3ngqt","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"ffhk","text":"bang","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"13mb0","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"1ch14","text":"***x2m2c5kd***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"1a2m9","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"ed3om","text":"whimper","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"f64jc","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"ymcm8tfx"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"x2m2c5kd"}}}'
+        self.assertEqual(expected_story_draft_raw, story.draft_raw)
+
+    def test_assemble_text_with_deleted_scene(self):
+        """assemble_text creates a new draft_raw for a story after a scene from that story was deleted"""
+        story = Story.objects.get(title="Alas")
+        story.assemble_text()
+
+        expected_story_draft_raw = '{"blocks":[{"key":"9l94n","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":0}],"data":{}},{"key":"867gh","text":"two","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"fje60","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":1}],"data":{}},{"key":"224hb","text":"three","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"ux72sqf2"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"5i35elhw"}}}'
         self.assertEqual(expected_story_draft_raw, story.draft_raw)
 
     def test_save(self):
@@ -274,4 +301,3 @@ class StorySerializerTestCase(TestCase):
         """delete returns 404 if story not found"""
         response = client.delete(reverse('story-detail', kwargs={'pk': 38}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-

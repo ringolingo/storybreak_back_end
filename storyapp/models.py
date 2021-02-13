@@ -80,6 +80,7 @@ class Story(models.Model):
         for scene in active_scenes:
             # load the scene's content blocks and add to story's draft_raw
             content = json.loads(scene.content_blocks)
+            content[0]['entityRanges'][0]['key'] = scene.location
             raw_json['blocks'] += content
 
             # assemble entity map, adding a new dict for each scene and giving it the appropriate data value
@@ -91,7 +92,7 @@ class Story(models.Model):
         self.draft_raw = updated_content
         self.save()
         # return draft_raw value for use in StoryRetrieveSerializer
-        return updated_content
+        # return updated_content
 
 
 class Scene(models.Model):
