@@ -107,3 +107,8 @@ class Scene(models.Model):
 
     class Meta:
         ordering = ('location', )
+
+class User(models.Model):
+    email = models.CharField(max_length=120, unique=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length = 50)
