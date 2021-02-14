@@ -18,9 +18,11 @@ from django.urls import path, include
 from rest_framework import routers
 from storyapp import views
 
+
 router = routers.DefaultRouter()
 router.register(r'stories', views.StoryView, 'story')
 router.register(r'scenes', views.SceneView, 'scene')
+router.register(r'users', views.UserView, 'user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
