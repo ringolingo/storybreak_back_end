@@ -14,7 +14,8 @@ from .models import Story, Scene, User
 
 class StoryView(viewsets.ViewSet):
     def list(self, request):
-        queryset = Story.objects.all()
+        user = self.request.query_params.get('user')
+        queryset = Story.objects.filter(user=user)
         serializer = StorySerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

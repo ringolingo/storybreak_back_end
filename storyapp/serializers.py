@@ -5,7 +5,7 @@ from .models import Story, Scene, User
 class StorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Story
-        fields = ('title', 'draft_raw', 'last_updated', 'id')
+        fields = ('title', 'draft_raw', 'last_updated', 'id', 'user')
 
 
 class SceneSerializer(serializers.ModelSerializer):

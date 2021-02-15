@@ -4,7 +4,7 @@ from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from storyapp.models import Story, Scene
+from storyapp.models import Story, Scene, User
 from .serializers import StorySerializer
 
 client = Client()
@@ -12,10 +12,23 @@ client = Client()
 
 class StoryTestCase(TestCase):
     def setUp(self):
+        self.ringo = User.objects.create(
+            email="ringo@fake.com",
+            first_name="Ringo",
+            last_name="Starr"
+        )
+
+        self.george = User.objects.create(
+            email="george@fake.com",
+            first_name="George",
+            last_name="Harrison"
+        )
+
         story = Story.objects.create(
             title="The Crucible",
             draft_raw='{"blocks":[{"key":"92eck","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloop","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"dr2hgl5j"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"milhz12y"}}}',
-            last_updated=datetime.datetime(2021, 2, 10, 0, 57, 43, 899746, tzinfo=datetime.timezone.utc)
+            last_updated=datetime.datetime(2021, 2, 10, 0, 57, 43, 899746, tzinfo=datetime.timezone.utc),
+            user=self.ringo
         )
         Scene.objects.create(
             entity_key="dr2hgl5j",
@@ -50,7 +63,8 @@ class StoryTestCase(TestCase):
         story_two = Story.objects.create(
             title="Vindication",
             draft_raw='{"blocks":["I better not show up in any test results"],"entityMap":{"0":"me neither"}}',
-            last_updated=datetime.datetime(2021, 2, 10, 0, 57, 43, 899746, tzinfo=datetime.timezone.utc)
+            last_updated=datetime.datetime(2021, 2, 10, 0, 57, 43, 899746, tzinfo=datetime.timezone.utc),
+            user=self.ringo
         )
         Scene.objects.create(
             entity_key="x2m2c5kd",
@@ -77,6 +91,7 @@ class StoryTestCase(TestCase):
 
         story_with_deleted_scene = Story.objects.create(
             title="Alas",
+            user=self.george,
             draft_raw='{"blocks":[{"key":"4fdnc","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":0}],"data":{}},{"key":"3ov3t","text":"one","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9l94n","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":1}],"data":{}},{"key":"867gh","text":"two","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"fje60","text":"***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":3,"key":2}],"data":{}},{"key":"224hb","text":"three","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"61ifpubi"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"ux72sqf2"},"2":{"type":"SCENE","mutability":"IMMUTABLE","data":"5i35elhw"}}}'
         )
         Scene.objects.create(
@@ -165,8 +180,21 @@ class StoryTestCase(TestCase):
 
 class StorySerializerTestCase(TestCase):
     def setUp(self):
+        self.ringo = User.objects.create(
+            email="ringo@fake.com",
+            first_name="Ringo",
+            last_name="Starr"
+        )
+
+        self.george = User.objects.create(
+            email="george@fake.com",
+            first_name="George",
+            last_name="Harrison"
+        )
+
         self.story = Story.objects.create(
             title="The Crucible",
+            user=self.ringo,
             draft_raw='{"blocks":[{"key":"92eck","text":"***dr2hgl5j***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"9e0ci","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bdih4","text":"a new line of text, mmm","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bbser","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"9bit5","text":"***milhz12y***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":1}],"data":{}},{"key":"4kf5f","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"dgvci","text":"bloop","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"dr2hgl5j"},"1":{"type":"SCENE","mutability":"IMMUTABLE","data":"milhz12y"}}}',
         )
         self.crucible_scene_one = Scene.objects.create(
@@ -200,6 +228,7 @@ class StorySerializerTestCase(TestCase):
 
         self.story_two = Story.objects.create(
             title="Vindication",
+            user=self.george,
             draft_raw='{"blocks":["I better not show up in any test results"],"entityMap":{"0":"me neither"}}',
             last_updated=datetime.datetime(2021, 2, 10, 0, 57, 43, 899746, tzinfo=datetime.timezone.utc)
         )
@@ -227,6 +256,7 @@ class StorySerializerTestCase(TestCase):
 
         self.valid_new_story = {
             "title": "Cromulent",
+            "user": 1,
             "draft_raw":'{"blocks":[{"key":"alskd","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"do6","text":"***y07hjbh4***","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[{"offset":0,"length":14,"key":0}],"data":{}},{"key":"e0c25","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"bria5","text":"ah yes, it was spring","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"elbs7","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"du9qf","text":"and the smell of fresh tar was everywhere","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"81es1","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"8u06p","text":"\\"this was extremely funny, thanks,\\" the protagonist said.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{"0":{"type":"SCENE","mutability":"IMMUTABLE","data":"y07hjbh4"}}}'
         }
 
@@ -237,8 +267,9 @@ class StorySerializerTestCase(TestCase):
 
     def test_get_all_stories(self):
         """get can retrieve all stories"""
+        id = self.ringo.id
         response = client.get(reverse('story-list'))
-        stories = Story.objects.all()
+        stories = Story.objects.filter(title="The Crucible")
         serializer = StorySerializer(stories, many=True)
 
         self.assertEqual(response.data, serializer.data)
