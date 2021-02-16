@@ -126,10 +126,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:3000",
-    "http://storybreak.herokuapp.com"
-]
+# CORS_ORIGIN_WHITELIST = [
+#     "http://storybreak.herokuapp.com"
+#     "http://localhost:3000",
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_METHODS = [
     'DELETE',
