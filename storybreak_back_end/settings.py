@@ -26,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(' ')
+ALLOWED_HOSTS = ['52.32.18.200']
 
 # Application definition
 
@@ -82,15 +82,8 @@ WSGI_APPLICATION = 'storybreak_back_end.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("DB_NAME"),
-        'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': os.getenv("DB_HOST"),
-        'PORT': os.getenv("DB_PORT"),
-        'TEST': {
-            'NAME': 'test_storybreak_db'
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'sqlite3.db'
     }
 }
 
@@ -136,3 +129,5 @@ STATIC_URL = '/static/'
 CORS_ORIGIN_WHITELIST = [
      "http://localhost:3000"
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
