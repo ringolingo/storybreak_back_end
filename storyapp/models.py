@@ -7,6 +7,9 @@ class Story(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='stories')
 
+    class Meta:
+        ordering = ('-last_updated', )
+
     def __str__(self):
         return self.title
 
